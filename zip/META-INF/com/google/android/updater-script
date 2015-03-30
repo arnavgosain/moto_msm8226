@@ -9,4 +9,4 @@ delete("/tmp/boot.img");
 delete("/tmp/mkbootimg");
 delete("/tmp/unpackbootimg");
 delete("/tmp/flash_kernel.sh");
-ui_print("Done!");
+ui_print("Velvet INJECTED!");
