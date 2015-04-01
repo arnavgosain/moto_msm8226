@@ -1,15 +1,14 @@
 #!/bin/bash
 echo "Welcome to Velvet Kernel Builder!"
 LC_ALL=C date +%Y-%m-%d
-toolchain="/root/velvet/toolchains/google-gcc-arm-eabi-4.8/bin/arm-eabi-"
-build=/root/velvet/out/titan
+toolchain="/home/arnavgosain/velvet/toolchains/google-gcc-arm-eabi-4.8/bin/arm-eabi-"
+build=/home/arnavgosain/velvet/out/"$device"
 kernel="velvet"
 version="R1"
 rom="cm"
 vendor="moto"
-device="titan"
 date=`date +%Y%m%d`
-config=velvet_titan_defconfig
+config=velvet_"$device"_defconfig
 kerneltype="zImage"
 jobcount="-j$(grep -c ^processor /proc/cpuinfo)"
 export KBUILD_BUILD_USER=arnavgosain
