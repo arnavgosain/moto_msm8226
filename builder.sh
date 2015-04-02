@@ -43,7 +43,7 @@ if [ -d arch/arm/boot/"$kerneltype" ]; then
 fi
 echo "Extracting files..."
 if [ -f arch/arm/boot/"$kerneltype" ]; then
-	mv arch/arm/boot/"$kerneltype" zip/tools
+	mv arch/arm/boot/"$kerneltype" zip-"$device"/tools
 else
 	echo "Nothing has been made..."
 	read -p "Clean working directory..(y/n)? : " achoice
@@ -72,8 +72,8 @@ else
 fi
 
 echo "Zipping..."
-if [ -f zip/tools/"$kerneltype" ]; then
-	cd zip
+if [ -f zip-"$device"/tools/"$kerneltype" ]; then
+	cd zip-"$device"
 	zip -r ../"$kernel"."$version"-"$rom"."$vendor"."$device"."$date".zip .
 	mv ../"$kernel"."$version"-"$rom"."$vendor"."$device"."$date".zip $build
 	rm tools/"$kerneltype"
