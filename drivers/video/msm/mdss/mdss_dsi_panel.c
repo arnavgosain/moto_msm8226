@@ -838,6 +838,11 @@ static int mdss_dsi_panel_on(struct mdss_panel_data *pdata)
 	if (pdata->panel_info.dynamic_cabc_enabled)
 		pdata->panel_info.cabc_mode = CABC_UI_MODE;
 
+	if (ctrl->set_hbm && ctrl->panel_data.panel_info.hbm_off_state) {
+		ctrl->set_hbm(ctrl, 1);
+		ctrl->panel_data.panel_info.hbm_off_state = 0;
+	}
+
 end:
 	if (dropbox_issue != NULL) {
 		char dropbox_entry[256];
@@ -882,8 +887,10 @@ static int mdss_dsi_panel_off(struct mdss_panel_data *pdata)
 	if (ctrl->panel_config.bare_board == true)
 		goto disable_regs;
 
-	if (ctrl->set_hbm)
+	if (ctrl->set_hbm && ctrl->panel_data.panel_info.hbm_state) {
 		ctrl->set_hbm(ctrl, 0);
+		ctrl->panel_data.panel_info.hbm_off_state = 1;
+	}
 
 	if (mfd->quickdraw_in_progress)
 		pr_debug("%s: in quickdraw, SH wants the panel SLEEP OUT\n",

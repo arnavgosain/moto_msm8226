@@ -345,6 +345,7 @@ struct mdss_panel_info {
 	bool hs_cmds_post_init;
 	bool hbm_feature_enabled;
 	bool hbm_state;
+	bool hbm_off_state;
 	bool dynamic_cabc_enabled;
 	enum cabc_mode cabc_mode;
 	char supplier[8];
