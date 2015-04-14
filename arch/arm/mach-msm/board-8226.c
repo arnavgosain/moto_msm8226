@@ -69,26 +69,6 @@ static int msm8226_paddr_to_memtype(unsigned int paddr)
 	return MEMTYPE_EBI1;
 }
 
-#ifdef CONFIG_BRICKED_THERMAL
-static struct msm_thermal_data msm_thermal_pdata = {
-	.sensor_id = 0,
-	.poll_ms = 400,
-	.shutdown_temp = 85,
-
-	.allowed_max_high = 84,
-	.allowed_max_low = 79,
-	.allowed_max_freq = 300000,
-
-	.allowed_mid_high = 78,
-	.allowed_mid_low = 72,
-	.allowed_mid_freq = 960000,
-
-	.allowed_low_high = 71,
-	.allowed_low_low = 65,
-	.allowed_low_freq = 1497600,
-};
-#endif
-
 static struct of_dev_auxdata msm8226_auxdata_lookup[] __initdata = {
 	OF_DEV_AUXDATA("qcom,msm-sdcc", 0xF9824000, \
 			"msm_sdcc.1", NULL),
@@ -146,11 +126,7 @@ void __init msm8226_add_drivers(void)
 	else
 		msm_clock_init(&msm8226_clock_init_data);
 	tsens_tm_init_driver();
-#ifdef CONFIG_BRICKED_THERMAL
-	msm_thermal_init(&msm_thermal_pdata);
-#else
 	msm_thermal_device_init();
-#endif
 }
 
 void __init msm8226_init(void)
