@@ -26,7 +26,9 @@
 #include <linux/module.h>
 #include <linux/delay.h>
 #include <linux/slab.h>
-#include <linux/lcd_notify.h>
+#ifdef CONFIG_POWERSUSPEND
+#include <linux/powersuspend.h>
+#endif
 
 #define DEFAULT_FIRST_LEVEL	90
 #define DEFAULT_SECOND_LEVEL	70
@@ -55,8 +57,10 @@ struct hotplug_data {
 	/* The frequency threshold at or above onlining starts */
 	unsigned int up_frequency;
 
+#ifdef CONFIG_POWERSUSPEND
 	/* If enabled, only one core will be active during suspend */
 	bool battery_saver;
+#endif
 
 	/* Debug flag */
 	bool debug;
@@ -80,9 +84,10 @@ static DEFINE_PER_CPU(struct cpu_load_data, cpuload);
 #endif
 static struct workqueue_struct *wq;
 static struct delayed_work decide_hotplug;
+#ifdef CONFIG_POWERSUSPEND
 static struct work_struct resume;
 static struct work_struct suspend;
-static struct notifier_block notif;
+#endif
 
 #ifndef SMART_LOAD_CALC
 static inline int get_cpu_load(unsigned int cpu)
@@ -291,6 +296,7 @@ static void __ref decide_hotplug_func(struct work_struct *work)
 	queue_delayed_work_on(0, wq, &decide_hotplug, msecs_to_jiffies(hot_data->hotplug_sampling * HZ));
 }
 
+#ifdef CONFIG_POWERSUSPEND
 static inline void suspend_func(struct work_struct *work)
 {	 
 	int cpu;
@@ -323,16 +329,22 @@ static inline void resume_func(struct work_struct *work)
 	queue_delayed_work_on(0, wq, &decide_hotplug, msecs_to_jiffies(hot_data->hotplug_sampling * HZ));
 }
 
-static int lcd_notifier_callback(struct notifier_block *this,
-	unsigned long event, void *data)
+static void aero_hotplug_suspend(struct power_suspend *h)
 {
-	if (event == LCD_EVENT_ON_START)
-		queue_work(system_power_efficient_wq, &resume);
-	else if (event == LCD_EVENT_OFF_START)
-		queue_work(system_power_efficient_wq, &suspend);
-
-	return NOTIFY_OK;
+	queue_work(system_power_efficient_wq, &suspend);
 }
+
+
+static void aero_hotplug_resume(struct power_suspend *h)
+{
+	queue_work(system_power_efficient_wq, &resume);
+}
+
+static struct power_suspend aero_hotplug_power_suspend = {
+	.suspend = aero_hotplug_suspend,
+	.resume	 = aero_hotplug_resume,
+};
+#endif
 
 /*** Start sysfs entries ***/
 #define show_tunable(file_name, object)					\
@@ -349,7 +361,9 @@ show_tunable(all_cpus_threshold, all_cpus_threshold);
 show_tunable(low_latency, low_latency);
 show_tunable(debug, debug);
 show_tunable(up_frequency, up_frequency);
+#ifdef CONFIG_POWERSUSPEND
 show_tunable(battery_saver, battery_saver);
+#endif
 
 #define store_tunable(file_name, object)					\
 static ssize_t store_##file_name						\
@@ -368,7 +382,9 @@ store_tunable(all_cpus_threshold, all_cpus_threshold);
 store_tunable(low_latency, low_latency);
 store_tunable(debug, debug);
 store_tunable(up_frequency, up_frequency);
+#ifdef CONFIG_POWERSUSPEND
 store_tunable(battery_saver, battery_saver);
+#endif
 
 define_one_global_rw(single_cpu_threshold);
 define_one_global_rw(hotplug_sampling);
@@ -377,7 +393,9 @@ define_one_global_rw(all_cpus_threshold);
 define_one_global_rw(low_latency);
 define_one_global_rw(debug);
 define_one_global_rw(up_frequency);
+#ifdef CONFIG_POWERSUSPEND
 define_one_global_rw(battery_saver);
+#endif
 
 static struct attribute *aero_hotplug_attributes[] = 
 {
@@ -387,7 +405,9 @@ static struct attribute *aero_hotplug_attributes[] =
 	&all_cpus_threshold.attr,
 	&up_frequency.attr,
 	&low_latency.attr,
+#ifdef CONFIG_POWERSUSPEND
 	&battery_saver.attr,
+#endif
 	&debug.attr,
 	NULL
 };
@@ -412,10 +432,11 @@ int __init aero_hotplug_init(void)
 	hot_data->single_cpu_threshold = DEFAULT_FIRST_LEVEL;
 	hot_data->all_cpus_threshold = DEFAULT_SECOND_LEVEL;
 	hot_data->low_latency = false;
-	hot_data->debug = true;
+	hot_data->debug = false;
 	hot_data->up_frequency = DEFAULT_UP_FREQUENCY;
+#ifdef CONFIG_POWERSUSPEND
 	hot_data->battery_saver = true;
-
+#endif
 	if (hot_data->debug)
 		pr_info("[Hot-Plug]: Aero Hotplug driver started.\n");
 
@@ -445,14 +466,11 @@ int __init aero_hotplug_init(void)
 	if (!wq)
 		return -ENOMEM;
 
-	notif.notifier_call = lcd_notifier_callback;
-
-	if (lcd_register_client(&notif)) {
-		return -EINVAL;
-	}
-
+#ifdef CONFIG_POWERSUSPEND
+	register_power_suspend(&aero_hotplug_power_suspend);
 	INIT_WORK(&resume, resume_func);
 	INIT_WORK(&suspend, suspend_func);
+#endif
 	INIT_DELAYED_WORK(&decide_hotplug, decide_hotplug_func);
 	queue_delayed_work_on(0, wq, &decide_hotplug, msecs_to_jiffies(30000));
 	
