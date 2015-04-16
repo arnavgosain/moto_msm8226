@@ -1,6 +1,6 @@
 #
 # Automatically generated file; DO NOT EDIT.
-# Linux/arm 3.4.42 Kernel Configuration
+# Linux/arm 3.4.61 Kernel Configuration
 #
 ## Velvet
 CONFIG_INTELLI_PLUG=y
