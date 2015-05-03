@@ -79,7 +79,6 @@ if [ -f zip-"$device"/tools/"$kerneltype" ]; then
 	rm tools/"$kerneltype"
 	cd ..
 	rm -rf arch/arm/boot/"$kerneltype"
-	export OUT="$build"
 	echo "Done..."
 	exit 0;
 else
