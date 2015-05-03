@@ -1,7 +1,7 @@
 #!/bin/bash
 echo "Welcome to Velvet Kernel Builder!"
 LC_ALL=C date +%Y-%m-%d
-toolchain="/home/arnavgosain/velvet/toolchains/arm-eabi-6.0/bin/arm-eabi-"
+toolchain="/home/arnavgosain/velvet/toolchains/google-gcc-arm-eabi-4.8/bin/arm-eabi-"
 build=/home/arnavgosain/velvet/out/"$device"
 kernel="velvet"
 version="R1"
